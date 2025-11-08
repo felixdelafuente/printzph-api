@@ -2,6 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using PrintzPh.Application.Interfaces;
 using PrintzPh.Domain.Entities;
+using PrintzPh.Domain.Enums;
 using PrintzPh.Infrastructure.Persistence;
 
 namespace PrintzPh.Infrastructure.Repositories;
@@ -37,9 +38,38 @@ public class UserRepository : IUserRepository
   public async Task<(List<User> Items, int TotalCount)> GetPaginatedAsync(
       int pageNumber,
       int pageSize,
+      string? sortBy = "CreatedAt",
+      string? sortOrder = "desc",
+      string? status = null,
       CancellationToken cancellationToken = default)
   {
     var query = _context.Users.AsQueryable();
+
+    if (!string.IsNullOrEmpty(status) && Enum.TryParse<UserStatus>(status, true, out var userStatus))
+    {
+      query = query.Where(u => u.Status == userStatus);
+    }
+
+    query = sortBy?.ToLower() switch
+    {
+      "id" => sortOrder?.ToLower() == "asc"
+          ? query.OrderBy(u => u.Id)
+          : query.OrderByDescending(u => u.Id),
+
+      "firstname" => sortOrder?.ToLower() == "asc"
+          ? query.OrderBy(u => u.FirstName)
+          : query.OrderByDescending(u => u.FirstName),
+
+      "lastname" => sortOrder?.ToLower() == "asc"
+          ? query.OrderBy(u => u.LastName)
+          : query.OrderByDescending(u => u.LastName),
+
+      "createdat" => sortOrder?.ToLower() == "asc"
+          ? query.OrderBy(u => u.CreatedAt)
+          : query.OrderByDescending(u => u.CreatedAt),
+
+      _ => query.OrderByDescending(u => u.CreatedAt) // default fallback
+    };
 
     var totalCount = await query.CountAsync(cancellationToken);
 

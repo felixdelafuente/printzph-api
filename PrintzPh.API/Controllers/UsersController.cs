@@ -39,12 +39,18 @@ namespace PrintzPh.API.Controllers
         public async Task<IActionResult> GetPaginated(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = "CreatedAt",
+            [FromQuery] string? sortOrder = "desc",
+            [FromQuery] string? status = null,
             CancellationToken cancellationToken = default)
         {
             var query = new GetPaginatedUsersQuery
             {
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize = pageSize,
+                SortBy = sortBy,
+                SortOrder = sortOrder,
+                Status = status
             };
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);

@@ -22,6 +22,9 @@ public class GetPaginatedUsersQueryHandler : IRequestHandler<GetPaginatedUsersQu
     var (users, totalCount) = await _userRepository.GetPaginatedAsync(
         request.PageNumber,
         request.PageSize,
+        request.SortBy,
+        request.SortOrder,
+        request.Status,
         cancellationToken);
 
     var userDtos = _mapper.Map<List<UserDto>>(users);
